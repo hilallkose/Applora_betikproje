@@ -1,15 +1,20 @@
-#sunucu başlatma
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from app.routes import auth, posts, likes, comments
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from app.database import SessionLocal, engine
+import app.models, app.schemas
 
-app = FastAPI(title="Applora")
+app.models.Base.metadata.create_all(bind=engine)
 
-# Yüklenen dosyaları servis et
-app.mount("/uploads", StaticFiles(directory="static/uploads"), name="uploads")
+app = FastAPI()
 
-# Router'ları dahil et
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(posts.router, prefix="/posts", tags=["Posts"])
-app.include_router(likes.router, prefix="/likes", tags=["Likes"])
-app.include_router(comments.router, prefix="/comments", tags=["Comments"])
+# Her istek için veritabanı bağlantısı
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get("/")
+def root():
+    return {"message": "Applora  API'ye hoş geldin!"}
