@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from datetime import datetime
 
 class UserCreate(BaseModel):
     username: str
@@ -11,5 +10,8 @@ class PostCreate(BaseModel):
     image_path: str
 
 class CommentCreate(BaseModel):
+    username: str
     post_id: int
     text: str
+class LikeCreate(BaseModel):
+    post_id: int
