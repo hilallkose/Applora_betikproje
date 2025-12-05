@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APPLORA - Gönderi Akışı</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        /* Genel Arka Plan */
+        body {
+            background: linear-gradient(135deg, #f9a8d4, #a78bfa);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar-custom {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-family: 'Pacifico', cursive;
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, #f9a8d4, #a78bfa, #fcd34d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-interactive {
+            transition: all 0.3s ease;
+        }
+
+        .btn-interactive:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Kartlar */
+        .post-card {
+            max-width: 600px;
+            width: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .post-img {
+            max-height: 400px;
+            object-fit: cover;
+        }
+
+        .profile-img {
+            transition: transform 0.3s ease;
+        }
+
+        .profile-img:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-like {
+            color: #ef476f;
+        }
+
+        .btn-comment {
+            color: #118ab2;
+        }
+
+        /* Gönderi başlığı ve alt yorumlar */
+        .card-footer small {
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+    <div class="container d-flex justify-content-between align-items-center">
+        <!-- APPLORA Başlığı -->
+        <a class="navbar-brand" href="/feed">APPLORA</a>
+
+        <!-- Sağ Butonlar ve Profil Fotoğrafı -->
+        <div class="d-flex align-items-center">
+    
+    <a href="/new_post" class="btn btn-interactive btn-sm me-3" style="background-color: #fcd34d; border-color: #fcd34d; color: #333;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+        </svg>
+        Paylaş
+    </a>
+    
+    <a href="/profile/1" class="me-2">
+        <img src="/static/default.png" alt="Profil Fotoğrafı" class="rounded-circle profile-img" width="35" height="35">
+    </a>
+
+    <a href="/profile/1" class="btn btn-outline-primary btn-sm me-2 btn-interactive">Profilim</a> 
+    <a href="/" class="btn btn-outline-danger btn-sm btn-interactive">Çıkış Yap</a>
+    </div>
+    </div>
+</nav>
+
+<style>
+    .profile-img {
+        transition: transform 0.3s ease;
+    }
+    .profile-img:hover {
+        transform: scale(1.2);
+    }
+</style>
+
+
+    <!-- Gönderi Akışı -->
+    <div class="container d-flex justify-content-center mt-4 mb-5">
+        <div class="col-12 col-md-8">
+
+            <h2 class="text-center text-white mb-4">Gönderi Akışı</h2>
+
+            {% for post in posts %}
+            <div class="card shadow post-card mb-4 mx-auto">
+                <div class="card-header bg-white d-flex align-items-center">
+                    <img src="/static/default.png" alt="Profil Resmi" class="rounded-circle me-2 profile-img" width="40" height="40">
+                    <a href="/profile/{{ post.user.id }}" class="fw-bold text-decoration-none text-dark">{{ post.user.username }}</a>
+                </div>
+
+                <img src="{{ post.image_path }}" class="card-img-top post-img" alt="Gönderi Resmi">
+
+                <div class="card-body">
+                    <div class="d-flex mb-2">
+    <form action="/like" method="post" class="d-inline me-2">
+        <input type="hidden" name="post_id" value="{{ post.id }}">
+        
+        <button type="submit" class="btn btn-sm btn-like btn-outline-light btn-interactive">
+            ❤ {{ post.likes | length }} Beğeni
+        </button>
+    </form>
+    
+    <button class="btn btn-sm btn-comment btn-outline-light btn-interactive">💬 {{ post.comments | length }} Yorum</button>
+</div>
+
+                    <p class="card-text">
+                        <span class="fw-bold">{{ post.user.username }}:</span> {{ post.caption }}
+                    </p>
+                    <small class="text-muted">Paylaşım: {{ post.created_at.strftime('%d %B, %Y') }}</small>
+                </div>
+
+                <div class="card-footer bg-white pt-0">
+        <form action="/comment" method="post" class="mt-2">
+            <input type="hidden" name="post_id" value="{{ post.id }}">
+            <div class="input-group input-group-sm">
+                <input type="text" name="comment_text" class="form-control" placeholder="Yorum yaz..." required>
+                <button type="submit" class="btn btn-primary">Gönder</button>
+            </div>
+        </form>
+
+        <small class="text-secondary mt-2 d-block">En son yorum:</small>
+        {% if post.comments %}
+            {% set last_comment = post.comments | last %} 
+            <p class="mb-0 small"><span class="fw-bold">{{ last_comment.user.username }}:</span> {{ last_comment.text }}</p>
+        {% else %}
+            <p class="mb-0 small text-muted">Henüz yorum yok.</p>
+        {% endif %}
+    </div>
+
+</div> {% endfor %}
+                
+            </div>
+            {% endfor %}
+
+            {% if not posts %}
+            <div class="alert alert-info text-center">
+                Henüz kimse gönderi paylaşmamış. İlk gönderiyi sen paylaş!
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</body>
+</html>
