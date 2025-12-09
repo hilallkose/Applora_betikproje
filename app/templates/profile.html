@@ -7,59 +7,13 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   
   <style>
-    body {
-      background: linear-gradient(135deg, #f9a8d4, #a78bfa);
-      min-height: 100vh;
-    }
-    
-    .post-img {
-      width: 100%;
-      height: 250px; 
-      object-fit: cover; 
-      transition: transform 0.3s ease;
-    }
-    
-    /* Resmin üzerine gelince hafif büyüme efekti */
-    .post-card:hover .post-img {
-      transform: scale(1.05);
-    }
-    
-    .post-card {
-      overflow: hidden; 
-      border: none;
-      border-radius: 10px;
-      position: relative; /* Silme butonu için referans */
-    }
-
-    /* Silme Butonu Stili */
-    .delete-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 10;
-        background: rgba(255, 0, 0, 0.8);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 35px;
-        height: 35px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0; /* Normalde gizli */
-        transition: opacity 0.2s;
-        cursor: pointer;
-    }
-
-    /* Kartın üzerine gelince silme butonu görünsün */
-    .post-card:hover .delete-btn {
-        opacity: 1;
-    }
-
-    /* Profil fotosu üzerindeki efektler */
-    label:hover .overlay {
-        opacity: 1 !important;
-    }
+    body { background: linear-gradient(135deg, #f9a8d4, #a78bfa); min-height: 100vh; }
+    .post-img { width: 100%; height: 250px; object-fit: cover; transition: transform 0.3s ease; }
+    .post-card:hover .post-img { transform: scale(1.05); }
+    .post-card { overflow: hidden; border: none; border-radius: 10px; position: relative; }
+    .delete-btn { position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; cursor: pointer; }
+    .post-card:hover .delete-btn { opacity: 1; }
+    .owner-upload-label:hover .overlay { opacity: 1 !important; }
   </style>
 </head>
 
@@ -67,10 +21,13 @@
 
   <nav class="navbar navbar-expand-lg navbar-light bg-white bg-opacity-75 shadow-sm mb-4 mx-3 mt-3 rounded-4">
     <div class="container">
-      <a class="navbar-brand fw-bold text-primary" href="/feed/{{ user.id }}">Applora</a>
+      <a class="navbar-brand fw-bold text-primary" href="/feed/{{ visitor_id }}">Applora</a>
       
+      <form action="/search" method="get" class="d-flex mx-auto flex-grow-1 px-3" style="max-width: 400px;">
+          <input class="form-control rounded-pill border-0 bg-light px-3" type="search" name="q" placeholder="Kullanıcı ara..." required>
+      </form>
       <div class="d-flex gap-2">
-        <a href="/feed/{{ user.id }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Ana Sayfa 🏠</a>
+        <a href="/feed/{{ visitor_id }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Ana Sayfa 🏠</a>
         <a href="/" class="btn btn-outline-danger btn-sm rounded-pill px-3">Çıkış Yap</a>
       </div>
     </div>
@@ -82,36 +39,32 @@
       <div class="row align-items-center mb-4">
         <div class="col-md-3 text-center position-relative">
           
-          <form action="/update_profile_image/{{ user.id }}" method="post" enctype="multipart/form-data" id="profileForm">
-            <label for="profile_upload" class="position-relative d-inline-block" style="cursor: pointer;">
-              
-              <img src="{{ user.profile_image or '/static/default.png' }}" 
-                   alt="Profil Fotoğrafı"
-                   class="rounded-circle border border-3 border-light shadow-sm" 
-                   style="width: 150px; height: 150px; object-fit: cover; transition: opacity 0.3s;">
-              
-              <div class="overlay rounded-circle d-flex align-items-center justify-content-center" 
-                   style="position: absolute; top: 0; left: 0; width: 150px; height: 150px; background: rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s;">
-                   <span class="text-white fw-bold">📷 Değiştir</span>
-              </div>
-            </label>
-            <input id="profile_upload" type="file" name="file" accept="image/*" style="display: none;" onchange="this.form.submit()">
-          </form>
+          {% if is_owner %}
+            <form action="/update_profile_image/{{ user.id }}" method="post" enctype="multipart/form-data" id="profileForm">
+                <label for="profile_upload" class="d-inline-block position-relative owner-upload-label" style="cursor: pointer;">
+                  <img src="{{ user.profile_image or '/static/default.png' }}" alt="Profil Fotoğrafı" class="rounded-circle border border-3 border-light shadow-sm" style="width: 150px; height: 150px; object-fit: cover; transition: opacity 0.3s;">
+                  <div class="overlay rounded-circle d-flex align-items-center justify-content-center" style="position: absolute; top: 0; left: 0; width: 150px; height: 150px; background: rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s;">
+                       <span class="text-white fw-bold">📷 Değiştir</span>
+                  </div>
+                </label>
+                <input id="profile_upload" type="file" name="file" accept="image/*" style="display: none;" onchange="this.form.submit()">
+            </form>
+          {% else %}
+            <img src="{{ user.profile_image or '/static/default.png' }}" alt="Profil Fotoğrafı" class="rounded-circle border border-3 border-light shadow-sm" style="width: 150px; height: 150px; object-fit: cover;">
+          {% endif %}
 
         </div>
         
         <div class="col-md-9 text-center text-md-start">
           <h2 class="fw-bold mb-1">{{ user.username }}</h2>
           <p class="text-muted mb-2">{{ user.email }}</p>
-          <small class="text-secondary">
-            📅 Katılma tarihi: {{ user.created_at.strftime('%d.%m.%Y') }}
-          </small>
+          <small class="text-secondary">📅 Katılma tarihi: {{ user.created_at.strftime('%d.%m.%Y') }}</small>
           
+          {% if is_owner %}
           <div class="mt-3">
-            <a href="/upload/{{ user.id }}" class="btn btn-primary px-4 shadow-sm rounded-pill">
-              + Yeni Fotoğraf Paylaş
-            </a>
+            <a href="/upload/{{ user.id }}" class="btn btn-primary px-4 shadow-sm rounded-pill">+ Yeni Fotoğraf Paylaş</a>
           </div>
+          {% endif %}
         </div>
       </div>
 
@@ -119,29 +72,23 @@
 
       <div class="mt-4">
         <h4 class="mb-4 text-center text-secondary">Gönderilerim</h4>
-        
         {% if posts %}
           <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
             {% for post in posts %}
             <div class="col">
               <div class="card h-100 shadow-sm post-card">
-                
+                {% if is_owner %}
                 <form action="/delete_post/{{ post.id }}" method="post" onsubmit="return confirm('Bu fotoğrafı silmek istediğine emin misin?');">
                     <input type="hidden" name="user_id" value="{{ user.id }}">
-                    <button type="submit" class="delete-btn" title="Sil">
-                        🗑️
-                    </button>
+                    <button type="submit" class="delete-btn" title="Sil">🗑️</button>
                 </form>
-
+                {% endif %}
                 <img src="{{ post.image_path }}" class="post-img" alt="Gönderi">
-                
                 <div class="card-body">
                   <p class="card-text text-dark">{{ post.caption }}</p>
                 </div>
                 <div class="card-footer bg-white border-0 text-end">
-                   <small class="text-muted" style="font-size: 0.8rem;">
-                     {{ post.created_at.strftime('%d %b %Y') }}
-                   </small>
+                   <small class="text-muted" style="font-size: 0.8rem;">{{ post.created_at.strftime('%d %b %Y') }}</small>
                 </div>
               </div>
             </div>
@@ -150,7 +97,11 @@
         {% else %}
           <div class="text-center py-5">
             <p class="fs-4 text-muted">Henüz hiç fotoğraf paylaşmadın 📸</p>
-            <p class="text-secondary">İlk anını ölümsüzleştirmek için yukarıdaki butona tıkla!</p>
+            {% if is_owner %}
+                <p class="text-secondary">İlk anını ölümsüzleştirmek için yukarıdaki butona tıkla!</p>
+            {% else %}
+                <p class="text-secondary">Bu kullanıcı henüz paylaşım yapmamış.</p>
+            {% endif %}
           </div>
         {% endif %}
       </div>

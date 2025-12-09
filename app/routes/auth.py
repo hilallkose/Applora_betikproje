@@ -42,9 +42,48 @@ def register_post(username: str = Form(...), email: str = Form(...), password: s
     db.refresh(new_user)
     return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
+# auth.py dosyasının en altındaki login_post fonksiyonunu bununla değiştir:
+
 @router.post("/login")
 def login_post(request: Request, email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == email).first()
+    
     if user and verify_password(password, user.password):
-        return RedirectResponse(url=f"/feed/{user.id}", status_code=status.HTTP_303_SEE_OTHER)
+        # 1. Yönlendirmeyi hazırla
+        response = RedirectResponse(url=f"/feed/{user.id}", status_code=status.HTTP_303_SEE_OTHER)
+        
+        # 2. Tarayıcıya "Kimlik Kartı" (Cookie) ver
+        # Bu sayede diğer sayfalarda gezerken kim olduğunu unutmayacağız
+        response.set_cookie(key="user_id", value=str(user.id))
+        
+        return response
+    
     return templates.TemplateResponse("login.html", {"request": request, "message": "Geçersiz kimlik bilgileri"})
+
+# --- ARAMA FONKSİYONU ---
+@router.get("/search", response_class=HTMLResponse)
+def search_users(
+    request: Request, 
+    q: str,  # Arama kutusuna yazılan kelime (query)
+    db: Session = Depends(get_db)
+):
+    # Arama kutusu boşsa veya çok kısaysa bir şey yapma
+    if not q or len(q) < 1:
+        return RedirectResponse(url="/")
+        
+    # Veritabanında arama yap (küçük/büyük harf duyarsız olması için ilike kullanılır ama 
+    # SQLite/Postgres farkı olmasın diye 'contains' kullanıyoruz)
+    results = db.query(models.User).filter(models.User.username.contains(q)).all()
+    
+    # Cookie'den giriş yapan kullanıcıyı bul (Navbar için lazım)
+    user_id = request.cookies.get("user_id")
+    current_user = None
+    if user_id:
+        current_user = db.query(models.User).filter(models.User.id == int(user_id)).first()
+
+    return templates.TemplateResponse("search.html", {
+        "request": request, 
+        "results": results, 
+        "q": q,
+        "user": current_user # Giriş yapmış kullanıcı bilgisi
+    })

@@ -1,3 +1,5 @@
+from typing import Optional
+from fastapi import APIRouter, Depends, Form, Request, status, UploadFile, File, Cookie # <-- Cookie Eklendi
 from fastapi import APIRouter, Depends, Form, Request, status, UploadFile, File
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -17,12 +19,40 @@ def feed(request: Request, user_id: int, db: Session = Depends(get_db)):
     posts = db.query(models.Post).join(models.User).order_by(desc(models.Post.created_at)).all()
     return templates.TemplateResponse("feed.html", {"request": request, "user": current_user, "posts": posts})
 
-@router.get("/profile/{user_id}", response_class=HTMLResponse)
-def profile(request: Request, user_id: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
+@router.get("/profile/{profile_id}", response_class=HTMLResponse)
+def profile(
+    request: Request, 
+    profile_id: int, 
+    db: Session = Depends(get_db),
+    # Tarayıcıdaki kimlik kartını (Cookie) okuyoruz
+    visitor_id: Optional[str] = Cookie(None, alias="user_id") 
+):
+    # Görüntülenecek profilin sahibi
+    user = db.query(models.User).filter(models.User.id == profile_id).first()
+    
     if not user:
+        # Eğer böyle bir kullanıcı yoksa ana sayfaya dön (ama kimin ana sayfası?)
+        # Cookie varsa ona dön, yoksa login'e at
+        if visitor_id:
+             return RedirectResponse(url=f"/feed/{visitor_id}")
         return RedirectResponse(url="/")
-    return templates.TemplateResponse("profile.html", {"request": request, "user": user, "posts": user.posts})
+
+    # Ziyaretçi kendi profiline mi bakıyor?
+    # Cookie'deki ID ile URL'deki ID aynı mı?
+    is_owner = False
+    if visitor_id and str(visitor_id) == str(profile_id):
+        is_owner = True
+
+    # Postları çek
+    posts = db.query(models.Post).filter(models.Post.user_id == profile_id).order_by(desc(models.Post.created_at)).all()
+
+    return templates.TemplateResponse("profile.html", {
+        "request": request, 
+        "user": user, 
+        "posts": posts,
+        "is_owner": is_owner, # Bu bilgiyi şablona gönderiyoruz!
+        "visitor_id": visitor_id # Navbar'daki "Ana Sayfa" butonu için lazım
+    })
 
 @router.get("/upload/{user_id}", response_class=HTMLResponse)
 def upload_get(request: Request, user_id: int):
