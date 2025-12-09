@@ -1,9 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+# Base sınıfını artık app.database dosyasından çekiyoruz
+from app.database import Base
 
 class User(Base):
     __tablename__ = "users"
