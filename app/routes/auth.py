@@ -8,8 +8,7 @@ import bcrypt
 from app.database import get_db
 from app import models
 
-# --- İŞTE EKSİK OLAN SATIR BU ---
-router = APIRouter() 
+router = APIRouter()
 # --------------------------------
 
 templates = Jinja2Templates(directory="app/templates")

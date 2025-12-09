@@ -1,0 +1,118 @@
+/* --- GENEL AYARLAR --- */
+body {
+    background: linear-gradient(135deg, #f9a8d4, #a78bfa);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- KART TASARIMLARI --- */
+.card {
+    border: none;
+    border-radius: 1rem !important; /* rounded-4 */
+}
+
+/* --- POST KARTLARI --- */
+.post-card {
+    transition: transform 0.2s;
+    overflow: hidden;
+    position: relative;
+    border-radius: 10px;
+    border: none;
+}
+
+.post-card:hover {
+    transform: translateY(-5px); /* Hafif yukarı kalkma efekti */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+}
+
+/* --- RESİMLER --- */
+.post-img {
+    width: 100%;
+    height: 300px; /* Feed için yükseklik */
+    object-fit: cover;
+}
+
+/* Profil sayfasındaki kare resimler için */
+.profile-post-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.post-card:hover .profile-post-img {
+    transform: scale(1.05); /* Resim büyüme efekti */
+}
+
+.user-avatar-small {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* --- BUTONLAR --- */
+.btn {
+    border-radius: 50px !important; /* rounded-pill */
+    font-weight: 600;
+}
+
+/* --- PROFİL SAYFASI EFEKTLERİ --- */
+.owner-upload-label {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+}
+
+/* Profil resmi üzerine gelince çıkan siyah katman */
+.owner-upload-label:hover .overlay {
+    opacity: 1 !important;
+}
+
+.overlay {
+    transition: opacity 0.3s;
+}
+
+/* --- SİLME BUTONU (Çöp Kutusu) --- */
+.delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    background: rgba(220, 53, 69, 0.9); /* Kırmızı */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0; /* Gizli */
+    transition: all 0.2s;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.delete-btn:hover {
+    transform: scale(1.1);
+    background: red;
+}
+
+.post-card:hover .delete-btn {
+    opacity: 1; /* Kartın üzerine gelince göster */
+}
+
+/* --- İKONLAR --- */
+.action-icon {
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+    color: #333;
+    line-height: 1;
+}
+.action-icon:hover {
+    transform: scale(1.2);
+}
