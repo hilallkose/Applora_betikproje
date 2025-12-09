@@ -7,7 +7,7 @@ from app.database import engine
 from app import models
 
 # --- Rotalarımızı (Böldüğümüz Dosyaları) Çağırıyoruz ---
-from app.routes import auth, posts, likes, comments
+from app.routes import auth, posts, likes, comments, relationships
 
 # 1. Veritabanı Tablolarını Oluştur (Eğer yoksa)
 models.Base.metadata.create_all(bind=engine)
@@ -35,6 +35,6 @@ app.include_router(auth.router)
 app.include_router(posts.router)
 app.include_router(likes.router)
 app.include_router(comments.router)
-
+app.include_router(relationships.router)
 
 # uvicorn app.main:app --reload

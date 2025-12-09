@@ -22,6 +22,8 @@ class User(Base):
     comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
     likes = relationship("Like", back_populates="user", cascade="all, delete-orphan")
 
+    following = relationship("Follow", foreign_keys="[Follow.follower_id]", back_populates="follower")
+    followers = relationship("Follow", foreign_keys="[Follow.followed_id]", back_populates="followed")
 
 class Post(Base):
     __tablename__ = "posts"
@@ -64,3 +66,14 @@ class Like(Base):
     # İlişkiler (Burada Sınıf isimlerini kullanıyoruz, o yüzden "User" ve "Post" kalabilir)
     user = relationship("User", back_populates="likes")
     post = relationship("Post", back_populates="likes")
+    
+    class Follow(Base):
+     __tablename__ = "follows"
+
+    id = Column(Integer, primary_key=True, index=True)
+    follower_id = Column(Integer, ForeignKey("users.id")) # Takip eden (Ben)
+    followed_id = Column(Integer, ForeignKey("users.id")) # Takip edilen (O)
+
+    # İlişkiler
+    follower = relationship("User", foreign_keys=[follower_id], back_populates="following")
+    followed = relationship("User", foreign_keys=[followed_id], back_populates="followers")

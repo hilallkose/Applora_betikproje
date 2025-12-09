@@ -2,14 +2,25 @@ import os
 import shutil
 from fastapi import UploadFile
 
-# Resimlerin kaydedileceği ana klasör yolu
-STATIC_DIR = "app/static"
+# --- DÜZELTME BURADA ---
+# Dosyanın (image_service.py) kendi konumunu buluyoruz
+current_file_path = os.path.abspath(__file__) # .../Applora/app/services/image_service.py
+
+# Buradan geriye doğru giderek Ana Proje Klasörünü (Applora) buluyoruz
+# 1. dirname -> app/services
+# 2. dirname -> app
+# 3. dirname -> Applora (Ana Klasör)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))
+
+# Hedef: Applora/static
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+# -----------------------
 
 def save_image(file: UploadFile, subfolder: str, filename: str) -> str:
     """
-    Dosyayı belirtilen klasöre kaydeder ve veritabanı için yolunu döndürür.
+    Dosyayı Applora/static klasörünün içine kaydeder.
     """
-    # Kayıt klasörü: app/static/images veya app/static/profile_images
+    # Kayıt klasörü: .../Applora/static/profile_images
     folder_path = os.path.join(STATIC_DIR, subfolder)
     
     # Klasör yoksa oluştur
@@ -23,20 +34,26 @@ def save_image(file: UploadFile, subfolder: str, filename: str) -> str:
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
-    # Veritabanına kaydedilecek yol (örn: /static/images/resim.jpg)
-    # "app/static" kısmını "/static" olarak değiştiriyoruz ki tarayıcı bulabilsin
+    # Veritabanına kaydedilecek yol (Tarayıcının anlayacağı formatta)
     return f"/static/{subfolder}/{filename}"
 
 def delete_image(db_path: str):
     """
-    Veritabanındaki yola (örn: /static/images/x.jpg) sahip dosyayı siler.
+    Veritabanındaki yola sahip dosyayı siler.
     """
     if not db_path:
         return
 
-    # /static/images/x.jpg -> app/static/images/x.jpg yoluna çeviriyoruz
-    # db_path.lstrip("/") baştaki / işaretini kaldırır
-    file_path = os.path.join("app", db_path.lstrip("/"))
+    # db_path: /static/profile_images/resim.jpg
+    # Bunu gerçek dosya yoluna çevirmemiz lazım.
+    # Baştaki "/static/" kısmını atıp, kendi STATIC_DIR yolumuzu ekliyoruz.
+    
+    # "/static/" kısmını temizle -> profile_images/resim.jpg
+    relative_path = db_path.lstrip("/static/")
+    relative_path = relative_path.lstrip("/") # Garanti olsun diye tekrar temizle
+    
+    # .../Applora/static/profile_images/resim.jpg
+    file_path = os.path.join(STATIC_DIR, relative_path)
     
     if os.path.exists(file_path):
         try:

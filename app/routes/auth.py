@@ -87,3 +87,14 @@ def search_users(
         "q": q,
         "user": current_user # Giriş yapmış kullanıcı bilgisi
     })
+    
+    # --- ÇIKIŞ YAPMA (LOGOUT) ---
+@router.get("/logout")
+def logout():
+    # Kullanıcıyı giriş sayfasına yönlendir
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    
+    # Tarayıcıdaki 'user_id' çerezini sil (Oturumu kapat)
+    response.delete_cookie("user_id")
+    
+    return response

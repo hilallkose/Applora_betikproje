@@ -19,39 +19,53 @@ def feed(request: Request, user_id: int, db: Session = Depends(get_db)):
     posts = db.query(models.Post).join(models.User).order_by(desc(models.Post.created_at)).all()
     return templates.TemplateResponse("feed.html", {"request": request, "user": current_user, "posts": posts})
 
+# app/routes/posts.py dosyasındaki profile fonksiyonunu BUL ve BUNUNLA DEĞİŞTİR:
+
 @router.get("/profile/{profile_id}", response_class=HTMLResponse)
 def profile(
     request: Request, 
     profile_id: int, 
     db: Session = Depends(get_db),
-    # Tarayıcıdaki kimlik kartını (Cookie) okuyoruz
     visitor_id: Optional[str] = Cookie(None, alias="user_id") 
 ):
-    # Görüntülenecek profilin sahibi
     user = db.query(models.User).filter(models.User.id == profile_id).first()
     
     if not user:
-        # Eğer böyle bir kullanıcı yoksa ana sayfaya dön (ama kimin ana sayfası?)
-        # Cookie varsa ona dön, yoksa login'e at
         if visitor_id:
              return RedirectResponse(url=f"/feed/{visitor_id}")
         return RedirectResponse(url="/")
 
-    # Ziyaretçi kendi profiline mi bakıyor?
-    # Cookie'deki ID ile URL'deki ID aynı mı?
+    # 1. Ziyaretçi Sahibi mi?
     is_owner = False
     if visitor_id and str(visitor_id) == str(profile_id):
         is_owner = True
 
-    # Postları çek
+    # 2. Ziyaretçi Takip Ediyor mu? (YENİ KISIM)
+    is_following = False
+    if visitor_id and not is_owner:
+        follow_check = db.query(models.Follow).filter(
+            models.Follow.follower_id == int(visitor_id),
+            models.Follow.followed_id == profile_id
+        ).first()
+        if follow_check:
+            is_following = True
+
+    # 3. Takipçi Sayıları (YENİ KISIM)
+    # user.followers bir liste olduğu için len() ile sayısını alabiliriz
+    followers_count = db.query(models.Follow).filter(models.Follow.followed_id == profile_id).count()
+    following_count = db.query(models.Follow).filter(models.Follow.follower_id == profile_id).count()
+
     posts = db.query(models.Post).filter(models.Post.user_id == profile_id).order_by(desc(models.Post.created_at)).all()
 
     return templates.TemplateResponse("profile.html", {
         "request": request, 
         "user": user, 
         "posts": posts,
-        "is_owner": is_owner, # Bu bilgiyi şablona gönderiyoruz!
-        "visitor_id": visitor_id # Navbar'daki "Ana Sayfa" butonu için lazım
+        "is_owner": is_owner,
+        "visitor_id": visitor_id,
+        "is_following": is_following,     # <-- Şablona gönderiyoruz
+        "followers_count": followers_count, # <-- Şablona gönderiyoruz
+        "following_count": following_count  # <-- Şablona gönderiyoruz
     })
 
 @router.get("/upload/{user_id}", response_class=HTMLResponse)

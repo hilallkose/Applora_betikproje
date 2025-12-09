@@ -28,7 +28,7 @@
       </form>
       <div class="d-flex gap-2">
         <a href="/feed/{{ visitor_id }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">Ana Sayfa 🏠</a>
-        <a href="/" class="btn btn-outline-danger btn-sm rounded-pill px-3">Çıkış Yap</a>
+        <a href="/logout" class="btn btn-outline-danger btn-sm rounded-pill px-3">Çıkış Yap</a>
       </div>
     </div>
   </nav>
@@ -57,6 +57,38 @@
         
         <div class="col-md-9 text-center text-md-start">
           <h2 class="fw-bold mb-1">{{ user.username }}</h2>
+          <div class="d-flex gap-3 mb-3 text-secondary">
+              <span><b>{{ posts|length }}</b> gönderi</span>
+              <span><b>{{ followers_count }}</b> takipçi</span>
+              <span><b>{{ following_count }}</b> takip</span>
+          </div>
+          <div class="mt-3">
+            
+            {% if is_owner %}
+                <a href="/upload/{{ user.id }}" class="btn btn-primary px-4 shadow-sm rounded-pill">
+                  + Yeni Fotoğraf Paylaş
+                </a>
+
+            {% elif visitor_id %}
+                {% if is_following %}
+                    <form action="/unfollow/{{ user.id }}" method="post" class="d-inline">
+                        <input type="hidden" name="current_user_id" value="{{ visitor_id }}">
+                        <button type="submit" class="btn btn-outline-secondary px-4 rounded-pill fw-bold">
+                            Takipten Çık
+                        </button>
+                    </form>
+                {% else %}
+                    <form action="/follow/{{ user.id }}" method="post" class="d-inline">
+                        <input type="hidden" name="current_user_id" value="{{ visitor_id }}">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill fw-bold">
+                            Takip Et
+                        </button>
+                    </form>
+                {% endif %}
+
+            {% endif %}
+            
+          </div>
           <p class="text-muted mb-2">{{ user.email }}</p>
           <small class="text-secondary">📅 Katılma tarihi: {{ user.created_at.strftime('%d.%m.%Y') }}</small>
           
